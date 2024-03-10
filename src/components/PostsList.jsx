@@ -7,13 +7,30 @@ import classes from './PostsList.module.css';
 function PostsList({ isPosting, onStopPosting }) {
     const [posts, setPosts] = useState([]);
 
+    // useEffect is a hook that runs after the first render and after every update. Here, it avoids an infinite loop by passing an empty array as the second argument. This tells React to run the effect only once after the first render.
+    // useEffect passes a function and an array. The function shouldn't be async because it returns a promise, and useEffect doesn't support promises.
+    // Instead, you can create an async function inside useEffect with a function expression and call it immediately
     useEffect(() => {
         console.log('posts AFTER set', posts);
-    }, [posts]);
+        async function fetchPosts() {
+            const response = await fetch('http://localhost:8080/posts', {
+                method: 'GET'
+            })
+            const resData = await response.json();
+            setPosts(resData.posts);
+        }
+        fetchPosts();
+    }, []);
 
     function addPostHandler(postData) {
         console.log('addPostHandler postData', postData);
-        // const newPost = { author: enteredAuthor, body: enteredBody };
+        fetch('http://localhost:8080/posts', {
+            method: 'POST',
+            body: JSON.stringify(postData),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
         setPosts((prevPosts) => [postData, ...prevPosts]);
     }
 
